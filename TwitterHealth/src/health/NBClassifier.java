@@ -80,7 +80,7 @@ public class NBClassifier {
 		} else {
 			myNonRelevantTweets.add(temp.toString());
 		}
-		claerMemory();
+		clearMemory();
 	}
 	
 	public void learn(String aRelevant, String aTweet) {
@@ -92,7 +92,7 @@ public class NBClassifier {
 		} else {
 			myNonRelevantTweets.add(aTweet);
 		}
-		claerMemory();
+		clearMemory();
 	}
 	
 	private void readInput() {
@@ -120,7 +120,7 @@ public class NBClassifier {
             	/*
             	 * learning Tweets format:
             	 * format: [X/N]Tweets String
-            	 * index:  011123............
+            	 * index:  01/123............
             	 */
             	myTcounter++;
             	
@@ -213,9 +213,9 @@ public class NBClassifier {
 		myBayes.learn("N", myNonRelevantWords);
 	}
 	
-	private void claerMemory() {
-		while (myNonRelevantTweets.size() > MAX_LEARNING_DATA) {
-			myNonRelevantTweets.remove(0);
+	private void clearMemory() {
+		while (myRelevantTweets.size() > MAX_LEARNING_DATA) {
+			myRelevantTweets.remove(0);
 		}
 		while (myNonRelevantWords.size() > MAX_LEARNING_DATA) {
 			myNonRelevantTweets.remove(0);
