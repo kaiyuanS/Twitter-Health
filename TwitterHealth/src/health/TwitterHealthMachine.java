@@ -134,7 +134,7 @@ public class TwitterHealthMachine {
 		readKeywords();
 		
 		//count the existing keywords
-		
+		myKeywordsCounter.clear();
 		List<String> existTweets = myClassifier.getRelevantTweets();
 		
 		for (String eachTweet: existTweets)
@@ -148,14 +148,10 @@ public class TwitterHealthMachine {
 				myKeywordsCounter.put(eachKeyword, 1);
 			}
 		}
-		
-		for (String eachKey: myKeywordsCounter.keySet()) {
-			myKeywordsQueue.add(
-					new KeyWordNode(eachKey
-							, myKeywordsCounter.get(eachKey)));
-		}
+
 		
 		//counter the new keywords
+		myNewKeywordsCounter = new HashMap<String, Integer>(myKeywordsCounter);
 		for (String eachTweet: myRelevantTweets)
 			myNewWords.addAll(modifyWord(eachTweet));
 		for (String eachKeyword: myNewWords) {

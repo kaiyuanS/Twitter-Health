@@ -1,5 +1,6 @@
 package health;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -25,6 +26,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 
 public class TwitterHealthPanel extends JPanel {
@@ -60,6 +66,8 @@ public class TwitterHealthPanel extends JPanel {
 	private Timer myTimer;
 	
 	private JFileChooser myFilePicker;
+	
+	private List<String> myOldTen = new ArrayList<String>();
 	
 	public TwitterHealthPanel() {
 		
@@ -193,25 +201,13 @@ public class TwitterHealthPanel extends JPanel {
 				
 				
 			} else if (anEvent.getSource() == myTrend) {
+				myTextPanel.setText("");
 				List<String> mostTen = myMachine.getMostTen();
 				List<String> mostTweet = myMachine.getTenTweet();
 				
 				
-				/*//for test=======================================
-				List<String> mostTen = new ArrayList<String>();
-				mostTen.add("topic 1");
-				mostTen.add("topic 2");
-				mostTen.add("topic 3");
-				mostTen.add("topic 4");
-				mostTen.add("topic 5");
-				mostTen.add("topic 6");
-				mostTen.add("topic 7");
-				mostTen.add("topic 8");
-				mostTen.add("topic 9");
-				mostTen.add("topic 10");
-				//for test=======================================
-*/				
 				StringBuilder tempString = new StringBuilder();
+				StringBuilder outString = new StringBuilder();
 				Calendar current = Calendar.getInstance();
 				tempString.append("Refresh time: " + System.lineSeparator());
 				tempString.append("============================== " + System.lineSeparator());
@@ -226,19 +222,62 @@ public class TwitterHealthPanel extends JPanel {
 				tempString.append("============================== " + System.lineSeparator());
 				tempString.append("Top 10 Hottest topics:" + System.lineSeparator());
 				tempString.append("============================== " + System.lineSeparator());
-				for (int i = 0; i < mostTen.size(); i++)
-					tempString.append((i + 1) + ": "+ mostTen.get(i) + System.lineSeparator());
+				
+				setDocs(tempString.toString(), Color.BLACK, true, 25);
+				outString.append(tempString.toString());
+				
+				if (myOldTen.size() == 0) {
+					tempString = new StringBuilder();
+					for (int i = 0; i < mostTen.size(); i++)
+						tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" +System.lineSeparator());
+					setDocs(tempString.toString(), Color.ORANGE, true, 25);
+					outString.append(tempString.toString());
+				} else {
+					
+					for (int i = 0; i < mostTen.size(); i++) {
+						tempString = new StringBuilder();
+						int index =  myOldTen.indexOf(mostTen.get(i));
+						//System.out.println("i: " + i + ", index: " + index);
+						if (index == -1) {
+							tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" +System.lineSeparator());
+							setDocs(tempString.toString(), Color.ORANGE, true, 25);
+							outString.append(tempString.toString());
+						} else if (index > i) {
+							//up
+							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							setDocs(tempString.toString(), Color.RED, true, 25);
+							outString.append(tempString.toString());
+						} else if (index < i) {
+							//down
+							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							setDocs(tempString.toString(), Color.GREEN, true, 25);
+							outString.append(tempString.toString());
+						} else {
+							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							setDocs(tempString.toString(), Color.BLUE, true, 25);
+							outString.append(tempString.toString());
+						}
+					}
+				}
+				
+				
+				tempString = new StringBuilder();
 				tempString.append("============================== " + System.lineSeparator());
 				tempString.append("Tweets with hot topic" + System.lineSeparator());
 				tempString.append("============================== " + System.lineSeparator());
+
+				
 				for (int i = 0; i < mostTweet.size(); i++)
 					tempString.append((i + 1) + ": "+ mostTweet.get(i) + System.lineSeparator());
 				
 				//System.out.println(tempString.toString());
-				myTextPanel.setText(tempString.toString());
+				//myTextPanel.setText(tempString.toString());
+				setDocs(tempString.toString(), Color.BLACK, true, 25);
+				outString.append(tempString.toString());
 				myTextPanel.setCaretPosition(0);
 				//myScrollPane.getVerticalScrollBar().setValue(0);
-				myReport = tempString.toString();
+				myReport = outString.toString();
+				myOldTen = new ArrayList<String>(mostTen);
 				mySave.setEnabled(true);
 				
 			} else if (anEvent.getSource() == mySave) {
@@ -283,6 +322,25 @@ public class TwitterHealthPanel extends JPanel {
 			
 		}
 		
+	}
+	
+	private void insert(String str, AttributeSet attrSet) {
+		Document doc = myTextPanel.getDocument();
+		try {   
+			doc.insertString(doc.getLength(), str, attrSet);
+		} catch (BadLocationException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	private void setDocs(String str, Color col, boolean bold, int fontSize) {
+		SimpleAttributeSet attrSet = new SimpleAttributeSet();
+		StyleConstants.setForeground(attrSet, col);
+		if(bold==true){
+			StyleConstants.setBold(attrSet, true);
+		}
+		StyleConstants.setFontSize(attrSet, fontSize);
+		insert(str, attrSet);
 	}
 	
 	private class TimeListener implements ActionListener {
