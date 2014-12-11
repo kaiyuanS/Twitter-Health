@@ -80,7 +80,7 @@ public class TwitterHealthMachine {
 					myRelevantTweets.add(eachRawTweets);
 				} else {
 					nre++;
-					if (MY_RANDOM.nextInt(100) + 1 <= LEARN_NON_RELEVANT)
+					if (MY_RANDOM.nextInt(100) + 1 <= LEARN_NON_RELEVANT / ((double)100))
 						myClassifier.learn("N", eachRawTweets);
 				}
 				if (myRelevantTweets.size() == numberOfTweets)
@@ -326,6 +326,7 @@ public class TwitterHealthMachine {
 		int trueP = 0;
 		int falseP = 0;
 		int falseN = 0;
+		int tCounter = 0;
 		List<String> tweets = new ArrayList<String>();
 		List<Boolean> relevant = new ArrayList<Boolean>();
         try {
@@ -333,11 +334,14 @@ public class TwitterHealthMachine {
             writer = new PrintWriter(new FileOutputStream(MY_SCORE_FILE));
             while (scanner.hasNextLine()) {
             	line = scanner.nextLine();
-            	tweets.add(line.substring(3));
-            	if (line.charAt(1) == 'R')
-            		relevant.add(true);
-            	else
-            		relevant.add(false);	
+            	if (line.length() != 0) {
+	            	tweets.add(line.substring(3));
+	            	if (line.charAt(1) == 'R')
+	            		relevant.add(true);
+	            	else
+	            		relevant.add(false);
+	            	tCounter++;
+            	}
             }
             
             for (int i = 0; i < tweets.size(); i++) {
@@ -356,7 +360,8 @@ public class TwitterHealthMachine {
             		+ ", RefreshNum: " + myRefreshNumCounter
             		+ ", Precision: " + ((double)trueP / (trueP + falseP))
             		+ ", Recall: " + ((double)trueP / (trueP + falseN))
-            		+ ", F: " + ((double)2 * trueP / (2 * trueP + falseP + falseN)));
+            		+ ", F: " + ((double)2 * trueP / (2 * trueP + falseP + falseN))
+            		+ ", A: " + (1 - ((double)(falseP + falseN)) / tCounter));
             
             for (int i = 0; i < myScore.size(); i++)
             	writer.println(myScore.get(i));

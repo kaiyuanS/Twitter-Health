@@ -236,6 +236,8 @@ public class TwitterHealthPanel extends JPanel {
 				
 				//System.out.println(tempString.toString());
 				myTextPanel.setText(tempString.toString());
+				myTextPanel.setCaretPosition(0);
+				//myScrollPane.getVerticalScrollBar().setValue(0);
 				myReport = tempString.toString();
 				mySave.setEnabled(true);
 				
