@@ -23,6 +23,7 @@ public class NBClassifier {
 	
 	private static final String MY_STOPWORDS = "stopWords.txt";
 	private static final String MY_LEARNING_TWEETS = "learningData.txt";
+	private static final String MY_KEYWORD_FILE = "relatedterms.txt";
 	private static final int MAX_LEARNING_DATA = 5000;
 	
 	private Set<String> myStopwords = new HashSet<String>();
@@ -34,6 +35,8 @@ public class NBClassifier {
 	private List<String> myNonRelevantWords = new ArrayList<String>();
 	
 	private static Classifier<String, String> myBayes = new BayesClassifier<String, String>();
+	
+	private static Set<String> myKeyWord = new HashSet<String>();
 	
 	private static int myTcounter = 0;
 	private static int myR = 0;
@@ -62,7 +65,7 @@ public class NBClassifier {
 	}
 	
 	public String getRelevant(String aTweet) {
-		return myBayes.classify(modifyWord(aTweet)).getCategory();
+		return myBayes.classify(modifyWord(aTweet, true)).getCategory();
 		
 	}
 	
@@ -86,13 +89,23 @@ public class NBClassifier {
 	public void learn(String aRelevant, String aTweet) {
 		if (!aRelevant.equals("R") && !aRelevant.equals("N"))
 			throw new IllegalArgumentException("Wrong category: " + aRelevant);
-		myBayes.learn(aRelevant, modifyWord(aTweet));
+		
+		boolean relevant;
+		if (aRelevant.equals("R"))
+			relevant = true;
+		else 
+			relevant = false;
+		myBayes.learn(aRelevant, modifyWord(aTweet, relevant));
 		if (aRelevant.equals("R")) {
 			myRelevantTweets.add(aTweet);
 		} else {
 			myNonRelevantTweets.add(aTweet);
 		}
 		clearMemory();
+	}
+	
+	public int getLearningTotal() {
+		return myRelevantTweets.size() + myNonRelevantTweets.size();
 	}
 	
 	private void readInput() {
@@ -130,11 +143,11 @@ public class NBClassifier {
             	
         		if (topic.equals("R")) {
         			myRelevantTweets.add(tweet);
-         			myRelevantWords.addAll(modifyWord(tweet));
+         			myRelevantWords.addAll(modifyWord(tweet, true));
          			myR++;
         		} else if (topic.equals("N")) {
         			myNonRelevantTweets.add(tweet);
-        			myNonRelevantWords.addAll(modifyWord(tweet));
+        			myNonRelevantWords.addAll(modifyWord(tweet, false));
         			myN++;
         		}
             	
@@ -178,7 +191,7 @@ public class NBClassifier {
         }
 	}*/
 	
-	private List<String> modifyWord(String tweet) {
+	private List<String> modifyWord(String tweet, boolean relevant) {
 		StringBuilder tweetString = new StringBuilder();
 		List<String> ret = new ArrayList<String>();
 		tweet = tweet.toLowerCase();
@@ -190,6 +203,7 @@ public class NBClassifier {
 		}
 		
 		String[] tweetWords = tweetString.toString().split(" ");
+		readKeyWord();
 		for (String eachWord: tweetWords) {
 			//System.out.println(eachWord + ": " + myStopwords.contains(eachWord));
 			boolean isNumber = true;
@@ -199,8 +213,10 @@ public class NBClassifier {
 					break;
 				}
 			}
-			if (isNumber && !myStopwords.contains(eachWord) && eachWord.length() != 0)
-				ret.add(eachWord);
+			if (!isNumber && !myStopwords.contains(eachWord) && eachWord.length() != 0) {
+				if (relevant || !myKeyWord.contains(eachWord))
+					ret.add(eachWord);
+			}
 		}
 		
 		return ret;
@@ -214,12 +230,36 @@ public class NBClassifier {
 	}
 	
 	private void clearMemory() {
+		
 		while (myRelevantTweets.size() > MAX_LEARNING_DATA) {
 			myRelevantTweets.remove(0);
 		}
-		while (myNonRelevantWords.size() > MAX_LEARNING_DATA) {
+		
+		while (myNonRelevantTweets.size() > MAX_LEARNING_DATA) {
 			myNonRelevantTweets.remove(0);
 		}
+	}
+	
+	private void readKeyWord() {
+		myKeyWord.clear();
+		String line = null;
+		Scanner scanner = null;
+        try {
+            scanner = new Scanner(new FileInputStream(MY_KEYWORD_FILE));
+            while (scanner.hasNextLine()) {
+            	line = scanner.nextLine().toLowerCase();
+            	myKeyWord.add(line);
+            }
+            
+        } catch (final NoSuchElementException ex) {
+            System.out.println("Input folder not found: " + ex.getMessage());
+        } catch (final FileNotFoundException ex) {
+            System.out.println("Input file not found: " + ex.getMessage());
+        } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
 	}
 
 }

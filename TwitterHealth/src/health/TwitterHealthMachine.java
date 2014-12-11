@@ -22,7 +22,7 @@ public class TwitterHealthMachine {
 	private static final String MY_TEST_FILE = "testingData.txt";
 	private static final String MY_SCORE_FILE = "score.txt";
 	private static final int TERM_NUMBER = 300;
-	private static final int LEARN_NON_RELEVANT = 1;//percentage
+	private static final double LEARN_NON_RELEVANT = 5000;//percentage
 	private static final Random MY_RANDOM = new Random();
 	private List<String> myMostTen = new ArrayList<String>();
 	
@@ -73,14 +73,14 @@ public class TwitterHealthMachine {
 		while (myRelevantTweets.size() < numberOfTweets) {
 			int re = 0;
 			int nre = 0;
-			myRawTweets = myTweetRetriever.getTweets(numberOfTweets * 10);
+			myRawTweets = myTweetRetriever.getTweets(numberOfTweets * 2);
 			for (String eachRawTweets: myRawTweets) {
 				if (myClassifier.getRelevant(eachRawTweets).equals("R")) {
 					re++;
 					myRelevantTweets.add(eachRawTweets);
 				} else {
 					nre++;
-					if (MY_RANDOM.nextInt(100) + 1 <= LEARN_NON_RELEVANT / ((double)100))
+					if (MY_RANDOM.nextDouble() <= LEARN_NON_RELEVANT / myClassifier.getLearningTotal())
 						myClassifier.learn("N", eachRawTweets);
 				}
 				if (myRelevantTweets.size() == numberOfTweets)
@@ -323,8 +323,12 @@ public class TwitterHealthMachine {
 		int falseP = 0;
 		int falseN = 0;
 		int tCounter = 0;
+		//int r = 0;
+		//int nr = 0;
 		List<String> tweets = new ArrayList<String>();
 		List<Boolean> relevant = new ArrayList<Boolean>();
+		
+		System.out.println("T length: " + tweets.size() + ", R length: " + relevant.size());
         try {
             scanner = new Scanner(new FileInputStream(MY_TEST_FILE));
             writer = new PrintWriter(new FileOutputStream(MY_SCORE_FILE));
@@ -332,13 +336,18 @@ public class TwitterHealthMachine {
             	line = scanner.nextLine();
             	if (line.length() != 0) {
 	            	tweets.add(line.substring(3));
-	            	if (line.charAt(1) == 'R')
+	            	if (line.charAt(1) == 'R') {
 	            		relevant.add(true);
-	            	else
+	            		//r++;
+	            	} else {
+	            		//nr++;
 	            		relevant.add(false);
+	            	}
 	            	tCounter++;
             	}
             }
+            
+            //System.out.println("T length: " + tweets.size() + ", R length: " + relevant.size());
             
             for (int i = 0; i < tweets.size(); i++) {
             	if (myClassifier.getRelevant(tweets.get(i)).equals("R")) {
@@ -351,7 +360,7 @@ public class TwitterHealthMachine {
             			falseN++;
             	}
             }
-            
+            //System.out.println("TP: " + trueP + ", FP: " + falseP + ", FN" + falseN);
             myScore.add("RefrehTime: " + myRefreshTimeCounter
             		+ ", RefreshNum: " + myRefreshNumCounter
             		+ ", Precision: " + ((double)trueP / (trueP + falseP))

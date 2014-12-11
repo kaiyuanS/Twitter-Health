@@ -229,7 +229,7 @@ public class TwitterHealthPanel extends JPanel {
 				if (myOldTen.size() == 0) {
 					tempString = new StringBuilder();
 					for (int i = 0; i < mostTen.size(); i++)
-						tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" +System.lineSeparator());
+						tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" + System.lineSeparator());
 					setDocs(tempString.toString(), Color.ORANGE, true, 25);
 					outString.append(tempString.toString());
 				} else {
@@ -239,21 +239,21 @@ public class TwitterHealthPanel extends JPanel {
 						int index =  myOldTen.indexOf(mostTen.get(i));
 						//System.out.println("i: " + i + ", index: " + index);
 						if (index == -1) {
-							tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" +System.lineSeparator());
+							tempString.append((i + 1) + ": "+ mostTen.get(i) + " (New!)" + System.lineSeparator());
 							setDocs(tempString.toString(), Color.ORANGE, true, 25);
 							outString.append(tempString.toString());
 						} else if (index > i) {
 							//up
-							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							tempString.append((i + 1) + ": "+ mostTen.get(i) + "\u2191" + System.lineSeparator());
 							setDocs(tempString.toString(), Color.RED, true, 25);
 							outString.append(tempString.toString());
 						} else if (index < i) {
 							//down
-							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							tempString.append((i + 1) + ": "+ mostTen.get(i) + "\u2193" + System.lineSeparator());
 							setDocs(tempString.toString(), Color.GREEN, true, 25);
 							outString.append(tempString.toString());
 						} else {
-							tempString.append((i + 1) + ": "+ mostTen.get(i) +System.lineSeparator());
+							tempString.append((i + 1) + ": "+ mostTen.get(i) + "\u2192" + System.lineSeparator());
 							setDocs(tempString.toString(), Color.BLUE, true, 25);
 							outString.append(tempString.toString());
 						}
